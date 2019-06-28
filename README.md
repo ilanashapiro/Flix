@@ -19,13 +19,14 @@ The following **optional** features are implemented:
 - [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to via tab bar] a TableView.
         - Added refresh control to collection view
 - [X] User can search for a movie.
-    -This functionality is included in both the table view and collection view
-- [ ] All images fade in as they are loading.
+    -This functionality is included in both the table view and collection view. The search bar is above the view so it remains visible and accessible when the user scrolls down.
+- [X] All images fade in as they are loading.
 - [X] User can view the large movie poster by tapping on a cell.
 - [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
-- [ ] Customize the selection effect of the cell.
+- [X] Customize the selection effect of the cell.
+    -Yellow when selects
 - [X] Customize the navigation bar.
-    - "Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image.
+    - "Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The top bar has the title "Movies" in dark green with a shadow.
 - [ ] Customize the UI.
 
 The following **additional** features are implemented:

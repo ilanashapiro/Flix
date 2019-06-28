@@ -16,9 +16,7 @@
 @property (nonatomic, strong) NSArray *movies;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
-@property (weak, nonatomic) IBOutlet UISearchBar *searchMovie;
-
-
+@property (weak, nonatomic) IBOutlet UISearchBar *searchBar;
 @property (strong, nonatomic) NSArray *filteredData;
 
 @end
@@ -30,12 +28,11 @@
     
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
-    self.searchMovie.delegate = self;
+    self.searchBar.delegate = self;
     
     [self fetchMovies];
     
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionView.collectionViewLayout;
-    
     layout.minimumInteritemSpacing = 5;
     layout.minimumLineSpacing = 5;
     
@@ -44,16 +41,34 @@
     CGFloat itemHeight = itemWidth * 1.5;
     layout.itemSize = CGSizeMake(itemWidth, itemHeight);
     
+    [self createRefreshControl];
+    [self customizeNavigationBarShadowGreen];
+}
+
+- (void) createRefreshControl {
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(fetchMovies) forControlEvents:UIControlEventValueChanged];
     
     [self.collectionView insertSubview:self.refreshControl atIndex:0]; //insertSubview is similar to addSubview, but puts the subview at specified index so there's no overlap with other elements. controls where it is in the view hierarchy
 }
 
+- (void) customizeNavigationBarShadowGreen {
+    self.navigationItem.title = @"Movies";
+    UINavigationBar *navigationBar = self.navigationController.navigationBar;
+    NSShadow *shadow = [NSShadow new];
+    shadow.shadowColor = [[UIColor grayColor] colorWithAlphaComponent:0.5];
+    shadow.shadowOffset = CGSizeMake(2, 2);
+    shadow.shadowBlurRadius = 4;
+    navigationBar.titleTextAttributes = @{NSFontAttributeName : [UIFont boldSystemFontOfSize:22],
+                                          NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0.2 blue:0 alpha:0.8],
+                                          NSShadowAttributeName : shadow};
+}
+
 - (void)fetchMovies {
     NSURL *url = [NSURL URLWithString:@"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed"];
     NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10.0];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
+    
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error != nil) {
             NSLog(@"%@", [error localizedDescription]);
@@ -67,6 +82,7 @@
             [self.refreshControl endRefreshing];
         }
     }];
+    
     [task resume];
 }
 
@@ -86,13 +102,10 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-
-
 - (void) didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     //Dispose of any resources that can be recreated
 }
-
 
 - (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
     MovieCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"MovieCollectionCell" forIndexPath:indexPath];
@@ -106,7 +119,32 @@
     NSURL *posterURL = [NSURL URLWithString:fullPosterURL]; //NSURL is very similar to NSString, except it checks to make sure the given string is a valid URL
     
     cell.posterView.image = nil; //clear out the old image so there's no "flicker" before the new one loads because recall we are reusing the cells from the queue
-    [cell.posterView setImageWithURL:posterURL];
+    
+    NSURLRequest *request = [NSURLRequest requestWithURL:posterURL];
+    
+    __weak MovieCollectionCell *weakCell = cell;
+    [cell.posterView setImageWithURLRequest:request placeholderImage:nil
+                                    success:^(NSURLRequest *imageRequest, NSHTTPURLResponse *imageResponse, UIImage *image) {
+                                        
+                                        // imageResponse will be nil if the image is cached
+                                        if (imageResponse) {
+                                            NSLog(@"Image was NOT cached, fade in image");
+                                            weakCell.posterView.alpha = 0.0;
+                                            weakCell.posterView.image = image;
+                                            
+                                            //Animate UIImageView back to alpha 1 over 1sec
+                                            [UIView animateWithDuration:1 animations:^{
+                                                weakCell.posterView.alpha = 1.0;
+                                            }];
+                                        }
+                                        else {
+                                            NSLog(@"Image was cached so just update the image");
+                                            weakCell.posterView.image = image;
+                                        }
+                                    }
+                                    failure:^(NSURLRequest *request, NSHTTPURLResponse * response, NSError *error) {
+                                        [self displayNetworkError];
+                                    }];
     
     return cell;
 }
@@ -115,7 +153,7 @@
     return self.filteredData.count;
 }
 
- #pragma mark - Navigation
+#pragma mark - Navigation
  
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -128,7 +166,6 @@
 
     detailsViewController.movie = movie;
     NSLog(@"Tapping on a movie!");
-     
  }
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
@@ -142,13 +179,24 @@
         NSLog(@"Filtered data: %@", self.filteredData);
 
     }
+    
     else {
         self.filteredData = self.movies;
     }
 
     [self.collectionView reloadData];
-
 }
 
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+    self.searchBar.showsCancelButton = YES;
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    self.searchBar.showsCancelButton = NO;
+    self.searchBar.text = @"";
+    [self.searchBar resignFirstResponder];
+    self.filteredData = self.movies;
+    [self.collectionView reloadData];
+}
 
 @end
