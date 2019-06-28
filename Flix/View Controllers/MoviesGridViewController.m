@@ -1,39 +1,48 @@
 //
-//  MoviesViewController.m
+//  MoviesGridViewController.m
 //  Flix
 //
 //  Created by ilanashapiro on 6/26/19.
-//  Copyright © 2019 ilanashapiro. All rights reserved.
+//  Copyright ©/Users/ilanashapiro/Desktop/Flix/Flix/View Controllers/MoviesGridViewController.m 2019 ilanashapiro. All rights reserved.
 //
 
-#import "MoviesViewController.h"
-#import "MovieCell.h"
-#import "UIImageView+AFNetworking.h" //there isn't a built in library to load an image from URL so we use one of the third party libraries from CocoaPod. this is a category and adds helper functions to augment UIImageView's capabilities.
+#import "MoviesGridViewController.h"
+#import "MovieCollectionCell.h"
+#import "UIImageView+AFNetworking.h"
 #import "DetailsViewController.h"
+@interface MoviesGridViewController () <UICollectionViewDataSource, UICollectionViewDelegate>
 
-@interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate>
-
-@property (weak, nonatomic) IBOutlet UITableView *tableView; //create an outlet for the table view from the view controller so that we can refer to the table view
 @property (nonatomic, strong) NSArray *movies;
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
 @end
 
-@implementation MoviesViewController
+@implementation MoviesGridViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
-    self.tableView.dataSource = self; //set data source equal to the view controller (self). once you're scrolling and want to show cells, use self for the data source methods
-    self.tableView.delegate = self; //set delegate equal to the view controller (self)
+    self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
     
     [self fetchMovies];
+    
+    UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionView.collectionViewLayout;
+    
+    layout.minimumInteritemSpacing = 5;
+    layout.minimumLineSpacing = 5;
+    
+    CGFloat postersPerLine = 2;
+    CGFloat itemWidth = (self.collectionView.frame.size.width - layout.minimumInteritemSpacing * (postersPerLine - 1)) / postersPerLine;
+    CGFloat itemHeight = itemWidth * 1.5;
+    layout.itemSize = CGSizeMake(itemWidth, itemHeight);
+    
     
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(fetchMovies) forControlEvents:UIControlEventValueChanged];
     
-    [self.tableView insertSubview:self.refreshControl atIndex:0]; //insertSubview is similar to addSubview, but puts the subview at specified index so there's no overlap with other elements. controls where it is in the view hierarchy
+    [self.collectionView insertSubview:self.refreshControl atIndex:0]; //insertSubview is similar to addSubview, but puts the subview at specified index so there's no overlap with other elements. controls where it is in the view hierarchy
 }
 
 - (void)fetchMovies {
@@ -44,25 +53,13 @@
         if (error != nil) {
             NSLog(@"%@", [error localizedDescription]);
             [self displayNetworkError];
-            
-            
-//
         }
         else {
             NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-            // NSLog(@"%@", dataDictionary);
             self.movies = dataDictionary[@"results"];
-//            for (NSDictionary *movie in self.movies) {
-//                // NSLog(@"%@", movie[@"title"]);
-//            }
-            
-            [self.tableView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
-            // TODO: Get the array of movies
-            // TODO: Store the movies in a property to use elsewhere
-            // TODO: Reload your table view data
+            [self.collectionView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
             [self.refreshControl endRefreshing];
         }
-        
     }];
     [task resume];
 }
@@ -82,28 +79,19 @@
     
     [self presentViewController:alert animated:YES completion:nil];
 }
-    
-    
+
+
+
 - (void) didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     //Dispose of any resources that can be recreated
 }
 
 
--(NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    //tells you how many rows you have
-    // NSLog(@"%i", self.movies.count);
-    return self.movies.count;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    //create and configure cell based on index path
+- (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    MovieCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"MovieCollectionCell" forIndexPath:indexPath];
     
-    MovieCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MovieCell"]; //see if there is a template in the queue for the tableView with the identifier "MovieCell" and if so, create the cell based on this template. if there is no template, create from scratch.
-    
-    NSDictionary *movie = self.movies[indexPath.row];
-    cell.titleLabel.text = movie[@"title"];
-    cell.synopsisLabel.text = movie[@"overview"];
+    NSDictionary *movie = self.movies[indexPath.item];
     
     NSString *baseURLString = @"https://image.tmdb.org/t/p/w500";
     NSString *posterURLString = movie[@"poster_path"];
@@ -114,28 +102,27 @@
     cell.posterView.image = nil; //clear out the old image so there's no "flicker" before the new one loads because recall we are reusing the cells from the queue
     [cell.posterView setImageWithURL:posterURL];
     
-//    cell.textLabel.text = movie[@"title"];
-    
     return cell;
 }
 
+- (NSInteger)collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return self.movies.count;
+}
 
-
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-// the id is the cell that got tapped on
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    
-    UITableViewCell *tappedCell = sender;
-    NSIndexPath *indexPath = [self.tableView indexPathForCell:tappedCell];
+ #pragma mark - Navigation
+ 
+ // In a storyboard-based application, you will often want to do a little preparation before navigation
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ // Get the new view controller using [segue destinationViewController].
+ // Pass the selected object to the new view controller.
+    UICollectionViewCell *tappedCell = sender;
+    NSIndexPath *indexPath = [self.collectionView indexPathForCell:tappedCell];
     NSDictionary *movie = self.movies[indexPath.row];
     DetailsViewController *detailsViewController = [segue destinationViewController]; //returns a UIViewController, which DetailsViewController is a subclass of
-    
+
     detailsViewController.movie = movie;
     NSLog(@"Tapping on a movie!");
-}
+     
+ }
 
 @end
