@@ -17,6 +17,9 @@
 @property (nonatomic, strong) NSArray *movies;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
+@property (strong, nonatomic) NSArray *filteredData;
+@property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
+
 @end
 
 @implementation MoviesViewController
@@ -27,6 +30,7 @@
     
     self.tableView.dataSource = self; //set data source equal to the view controller (self). once you're scrolling and want to show cells, use self for the data source methods
     self.tableView.delegate = self; //set delegate equal to the view controller (self)
+    self.searchBar.delegate = self;
     
     [self fetchMovies];
     
@@ -42,16 +46,15 @@
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (error != nil) {
-            NSLog(@"%@", [error localizedDescription]);
+            NSLog(@"Error! ---------- %@", [error localizedDescription]);
             [self displayNetworkError];
-            
-            
-//
         }
         else {
             NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
             // NSLog(@"%@", dataDictionary);
             self.movies = dataDictionary[@"results"];
+            self.filteredData = self.movies;
+//            NSLog(@"%@", self.movies);
 //            for (NSDictionary *movie in self.movies) {
 //                // NSLog(@"%@", movie[@"title"]);
 //            }
@@ -93,7 +96,7 @@
 -(NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     //tells you how many rows you have
     // NSLog(@"%i", self.movies.count);
-    return self.movies.count;
+    return self.filteredData.count; //formerly self.movies.count
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -101,7 +104,7 @@
     
     MovieCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MovieCell"]; //see if there is a template in the queue for the tableView with the identifier "MovieCell" and if so, create the cell based on this template. if there is no template, create from scratch.
     
-    NSDictionary *movie = self.movies[indexPath.row];
+    NSDictionary *movie = self.filteredData[indexPath.row];
     cell.titleLabel.text = movie[@"title"];
     cell.synopsisLabel.text = movie[@"overview"];
     
@@ -131,11 +134,44 @@
     
     UITableViewCell *tappedCell = sender;
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tappedCell];
-    NSDictionary *movie = self.movies[indexPath.row];
+    NSDictionary *movie = self.filteredData[indexPath.row];
     DetailsViewController *detailsViewController = [segue destinationViewController]; //returns a UIViewController, which DetailsViewController is a subclass of
     
     detailsViewController.movie = movie;
     NSLog(@"Tapping on a movie!");
 }
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    if (searchText.length != 0) {
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+//            NSLog(@"search bar activated. SEARCH TEXT IS:%@", evaluatedObject);
+//            BOOL isDict = [bindings isKindOfClass:[NSString class]];
+            
+//            NSLog(@"bindings is a %@", NSStringFromClass([bindings class]));
+//            NSLog(@"evaluatedObject is a %@", NSStringFromClass([evaluatedObject class]));
+//            NSString *title = @"title";
+//            NSString *titlePointerString = [[title mutableCopy] copy];
+//            NSLog(@"%p %p %@", title, titlePointerString, NSStringFromClass([titlePointerString class]));
+//            for(id key in evaluatedObject) {
+//                NSLog(@"key %@ is of type %@", key, NSStringFromClass([key class]));
+//                NSLog(@"%@", evaluatedObject[key]);
+//            }
+            
+//            NSLog(@"%@", evaluatedObject[titlePointerString]);
+            return [evaluatedObject[@"title"] containsString:searchText];  //evaluatedObject
+        }];
+        self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];
+
+        NSLog(@"Filtered data: %@", self.filteredData);
+
+    }
+    else {
+        self.filteredData = self.movies;
+    }
+
+    [self.tableView reloadData];
+
+}
+
 
 @end

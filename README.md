@@ -18,7 +18,8 @@ The following **optional** features are implemented:
 - [X] User sees an error message when there's a networking error.
 - [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to via tab bar] a TableView.
         - Added refresh control to collection view
-- [ ] User can search for a movie.
+- [X] User can search for a movie.
+    -This functionality is included in both the table view and collection view
 - [ ] All images fade in as they are loading.
 - [X] User can view the large movie poster by tapping on a cell.
 - [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
