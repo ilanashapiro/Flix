@@ -18,17 +18,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <searchBar contentMode="redraw" fixedFrame="YES" placeholder="Search for movie" translatesAutoresizingMaskIntoConstraints="NO" id="c82-kY-PNu">
+                                <rect key="frame" x="0.0" y="64" width="375" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </searchBar>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="178" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="F9i-oe-wHI">
-                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <rect key="frame" x="0.0" y="108" width="375" height="559"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <searchBar key="tableHeaderView" contentMode="redraw" placeholder="Search for movie" id="c82-kY-PNu">
-                                    <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                    <textInputTraits key="textInputTraits"/>
-                                </searchBar>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="MovieCell" rowHeight="178" id="zZ9-kU-hbH" customClass="MovieCell">
-                                        <rect key="frame" x="0.0" y="72" width="375" height="178"/>
+                                        <rect key="frame" x="0.0" y="28" width="375" height="178"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="zZ9-kU-hbH" id="8xx-BD-dam">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="177.5"/>
@@ -71,7 +71,7 @@
                             <constraint firstAttribute="bottom" secondItem="F9i-oe-wHI" secondAttribute="bottom" id="4Ui-tq-aAv"/>
                             <constraint firstItem="F9i-oe-wHI" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="VDY-lT-eld"/>
                             <constraint firstItem="F9i-oe-wHI" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="rY8-eU-sKE"/>
-                            <constraint firstItem="F9i-oe-wHI" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="s87-Jr-2uS"/>
+                            <constraint firstItem="F9i-oe-wHI" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="108" id="s87-Jr-2uS"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -83,7 +83,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="369" y="1093"/>
+            <point key="canvasLocation" x="368.80000000000001" y="1092.5037481259371"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="FW5-rf-2v0">
@@ -256,6 +256,6 @@
         <image name="projector_tabbar_item" width="21" height="25"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="X92-fB-oPs"/>
+        <segue reference="VQz-Ji-yf5"/>
     </inferredMetricsTieBreakers>
 </document>
