@@ -11,15 +11,14 @@
 #import "UIImageView+AFNetworking.h" //there isn't a built in library to load an image from URL so we use one of the third party libraries from CocoaPod. this is a category and adds helper functions to augment UIImageView's capabilities.
 #import "DetailsViewController.h"
 
-@interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView; //create an outlet for the table view from the view controller so that we can refer to the table view
 @property (nonatomic, strong) NSArray *movies;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
 @property (strong, nonatomic) NSArray *filteredData;
-@property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
-
+@property (strong, nonatomic) UISearchBar *searchBar;
 @end
 
 @implementation MoviesViewController

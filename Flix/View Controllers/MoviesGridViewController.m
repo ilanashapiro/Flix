@@ -10,14 +10,16 @@
 #import "MovieCollectionCell.h"
 #import "UIImageView+AFNetworking.h"
 #import "DetailsViewController.h"
-@interface MoviesGridViewController () <UICollectionViewDataSource, UICollectionViewDelegate>
+
+@interface MoviesGridViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UISearchBarDelegate>
 
 @property (nonatomic, strong) NSArray *movies;
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
+@property (weak, nonatomic) IBOutlet UISearchBar *searchMovie;
+
 
 @property (strong, nonatomic) NSArray *filteredData;
-@property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
 
 @end
 
@@ -28,7 +30,7 @@
     
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
-    self.searchBar.delegate = self;
+    self.searchMovie.delegate = self;
     
     [self fetchMovies];
     
@@ -60,6 +62,7 @@
         else {
             NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
             self.movies = dataDictionary[@"results"];
+            self.filteredData = self.movies;
             [self.collectionView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
             [self.refreshControl endRefreshing];
         }
@@ -133,18 +136,18 @@
         NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
             return [evaluatedObject[@"title"] containsString:searchText];  //evaluatedObject
         }];
-        
+
         self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];
-        
+
         NSLog(@"Filtered data: %@", self.filteredData);
-        
+
     }
     else {
         self.filteredData = self.movies;
     }
-    
+
     [self.collectionView reloadData];
-    
+
 }
 
 
