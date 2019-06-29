@@ -16,7 +16,8 @@ The following **required** functionality is complete:
 The following **optional** features are implemented:
 
 - [X] User sees an error message when there's a networking error.
-- [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to via tab bar] a TableView.
+    -This happens both when the user reloads manually or if there is an error in the initial loading on startup.
+- [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to, via tab bar] a TableView.
         - Added refresh control to collection view
 - [X] User can search for a movie.
     -This functionality is included in both the table view and collection view. The search bar is above the view so it remains visible and accessible when the user scrolls down.
@@ -24,15 +25,16 @@ The following **optional** features are implemented:
 - [X] User can view the large movie poster by tapping on a cell.
 - [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
 - [X] Customize the selection effect of the cell.
-    -Yellow when selects
+    -Yellow when the user selects, back to clear when the user returns
 - [X] Customize the navigation bar.
-    - "Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The top bar has the title "Movies" in dark green with a shadow.
+    - The navigation bar has the title "Movies" in dark green with a shadow.
 - [ ] Customize the UI.
 
 The following **additional** features are implemented:
 
-- [ ] List anything else that you can get done to improve the app functionality!
-    
+- [X] List anything else that you can get done to improve the app functionality!
+    -Customize the tab bar
+        -"Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The bar is a pale yellow color.
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
