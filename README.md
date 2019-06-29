@@ -2,7 +2,7 @@
 
 **Flix** is a movies app using the [The Movie Database API](http://docs.themoviedb.apiary.io/#).
 
-Time spent: **approx. 14-15** hours spent in total
+Time spent: **approx. 15** hours spent in total
 
 ## User Stories
 
