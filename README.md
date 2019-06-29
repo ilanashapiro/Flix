@@ -52,13 +52,14 @@ GIF created with [Recordit](http://recordit.co/).
 
 ## Notes
 
-Describe any challenges encountered while building the app.
+Implementing the search bar, especially in the collection view, was very difficult.
 
 ## Credits
 
 List an 3rd party libraries, icons, graphics, or other assets you used in your app.
 
 - [AFNetworking](https://github.com/AFNetworking/AFNetworking) - networking task library
+- CodePath Guides
 
 ## License
 
