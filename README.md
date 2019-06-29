@@ -23,6 +23,7 @@ The following **optional** features are implemented:
     -This functionality is included in both the table view and collection view. The search bar is above the view so it remains visible and accessible when the user scrolls down.
 - [X] All images fade in as they are loading.
 - [X] User can view the large movie poster by tapping on a cell.
+    -The cells in the collection view, when tapped, load the detail view which includes the large movie poster.
 - [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
 - [X] Customize the selection effect of the cell.
     -Yellow when the user selects, back to clear when the user returns
