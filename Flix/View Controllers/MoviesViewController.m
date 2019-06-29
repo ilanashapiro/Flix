@@ -11,22 +11,20 @@
 #import "UIImageView+AFNetworking.h" //there isn't a built in library to load an image from URL so we use one of the third party libraries from CocoaPod. this is a category and adds helper functions to augment UIImageView's capabilities.
 #import "DetailsViewController.h"
 
-@interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView; //create an outlet for the table view from the view controller so that we can refer to the table view
 @property (nonatomic, strong) NSArray *movies;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
 @property (strong, nonatomic) NSArray *filteredData;
-@property (strong, nonatomic) IBOutlet UISearchBar *searchBar;
-
+@property (strong, nonatomic) UISearchBar *searchBar;
 @end
 
 @implementation MoviesViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
     self.tableView.dataSource = self; //set data source equal to the view controller (self). once you're scrolling and want to show cells, use self for the data source methods
     self.tableView.delegate = self; //set delegate equal to the view controller (self)
@@ -34,10 +32,27 @@
     
     [self fetchMovies];
     
+    [self createRefreshControl];
+    [self customizeNavigationBarShadowGreen];
+}
+
+- (void) createRefreshControl {
     self.refreshControl = [[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(fetchMovies) forControlEvents:UIControlEventValueChanged];
     
     [self.tableView insertSubview:self.refreshControl atIndex:0]; //insertSubview is similar to addSubview, but puts the subview at specified index so there's no overlap with other elements. controls where it is in the view hierarchy
+}
+
+- (void) customizeNavigationBarShadowGreen {
+    self.navigationItem.title = @"Movies";
+    UINavigationBar *navigationBar = self.navigationController.navigationBar;
+    NSShadow *shadow = [NSShadow new];
+    shadow.shadowColor = [[UIColor grayColor] colorWithAlphaComponent:0.5];
+    shadow.shadowOffset = CGSizeMake(2, 2);
+    shadow.shadowBlurRadius = 4;
+    navigationBar.titleTextAttributes = @{NSFontAttributeName : [UIFont boldSystemFontOfSize:22],
+                                          NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:0.2 blue:0 alpha:0.8],
+                                          NSShadowAttributeName : shadow};
 }
 
 - (void)fetchMovies {
@@ -51,18 +66,11 @@
         }
         else {
             NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-            // NSLog(@"%@", dataDictionary);
+            
             self.movies = dataDictionary[@"results"];
             self.filteredData = self.movies;
-//            NSLog(@"%@", self.movies);
-//            for (NSDictionary *movie in self.movies) {
-//                // NSLog(@"%@", movie[@"title"]);
-//            }
             
             [self.tableView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
-            // TODO: Get the array of movies
-            // TODO: Store the movies in a property to use elsewhere
-            // TODO: Reload your table view data
             [self.refreshControl endRefreshing];
         }
         
@@ -85,18 +93,19 @@
     
     [self presentViewController:alert animated:YES completion:nil];
 }
-    
-    
+
 - (void) didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     //Dispose of any resources that can be recreated
 }
 
-
--(NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     //tells you how many rows you have
-    // NSLog(@"%i", self.movies.count);
-    return self.filteredData.count; //formerly self.movies.count
+    return self.filteredData.count;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -115,14 +124,34 @@
     NSURL *posterURL = [NSURL URLWithString:fullPosterURL]; //NSURL is very similar to NSString, except it checks to make sure the given string is a valid URL
     
     cell.posterView.image = nil; //clear out the old image so there's no "flicker" before the new one loads because recall we are reusing the cells from the queue
-    [cell.posterView setImageWithURL:posterURL];
     
-//    cell.textLabel.text = movie[@"title"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:posterURL];
+    __weak MovieCell *weakCell = cell;
+    [cell.posterView setImageWithURLRequest:request placeholderImage:nil
+                                    success:^(NSURLRequest *imageRequest, NSHTTPURLResponse *imageResponse, UIImage *image) {
+                                        
+                                        // imageResponse will be nil if the image is cached
+                                        if (imageResponse) {
+                                            NSLog(@"Image was NOT cached, fade in image");
+                                            weakCell.posterView.alpha = 0.0;
+                                            weakCell.posterView.image = image;
+                                            
+                                            //Animate UIImageView back to alpha 1 over 1sec
+                                            [UIView animateWithDuration:1 animations:^{
+                                                weakCell.posterView.alpha = 1.0;
+                                            }];
+                                        }
+                                        else {
+                                            NSLog(@"Image was cached so just update the image");
+                                            weakCell.posterView.image = image;
+                                        }
+                                    }
+                                    failure:^(NSURLRequest *request, NSHTTPURLResponse * response, NSError *error) {
+                                        [self displayNetworkError];
+                                    }];
     
     return cell;
 }
-
-
 
 #pragma mark - Navigation
 
@@ -135,8 +164,10 @@
     UITableViewCell *tappedCell = sender;
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tappedCell];
     NSDictionary *movie = self.filteredData[indexPath.row];
+    UIView *backgroundView = [[UIView alloc] init];
+    backgroundView.backgroundColor = UIColor.yellowColor;
+    tappedCell.selectedBackgroundView = backgroundView;
     DetailsViewController *detailsViewController = [segue destinationViewController]; //returns a UIViewController, which DetailsViewController is a subclass of
-    
     detailsViewController.movie = movie;
     NSLog(@"Tapping on a movie!");
 }
@@ -144,34 +175,29 @@
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     if (searchText.length != 0) {
         NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-//            NSLog(@"search bar activated. SEARCH TEXT IS:%@", evaluatedObject);
-//            BOOL isDict = [bindings isKindOfClass:[NSString class]];
-            
-//            NSLog(@"bindings is a %@", NSStringFromClass([bindings class]));
-//            NSLog(@"evaluatedObject is a %@", NSStringFromClass([evaluatedObject class]));
-//            NSString *title = @"title";
-//            NSString *titlePointerString = [[title mutableCopy] copy];
-//            NSLog(@"%p %p %@", title, titlePointerString, NSStringFromClass([titlePointerString class]));
-//            for(id key in evaluatedObject) {
-//                NSLog(@"key %@ is of type %@", key, NSStringFromClass([key class]));
-//                NSLog(@"%@", evaluatedObject[key]);
-//            }
-            
-//            NSLog(@"%@", evaluatedObject[titlePointerString]);
             return [evaluatedObject[@"title"] containsString:searchText];  //evaluatedObject
         }];
+        
         self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];
-
         NSLog(@"Filtered data: %@", self.filteredData);
-
     }
     else {
         self.filteredData = self.movies;
     }
 
     [self.tableView reloadData];
-
 }
 
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
+    self.searchBar.showsCancelButton = YES;
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    self.searchBar.showsCancelButton = NO;
+    self.searchBar.text = @"";
+    [self.searchBar resignFirstResponder];
+    self.filteredData = self.movies;
+    [self.tableView reloadData];
+}
 
 @end

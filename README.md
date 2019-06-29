@@ -2,7 +2,7 @@
 
 **Flix** is a movies app using the [The Movie Database API](http://docs.themoviedb.apiary.io/#).
 
-Time spent: **X** hours spent in total
+Time spent: **approx. 15-17** hours spent in total
 
 ## User Stories
 
@@ -16,35 +16,38 @@ The following **required** functionality is complete:
 The following **optional** features are implemented:
 
 - [X] User sees an error message when there's a networking error.
-- [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to via tab bar] a TableView.
+    -This happens both when the user reloads manually or if there is an error in the initial loading on startup.
+- [X] Movies are displayed using a CollectionView instead of [EDIT: in addition to, via tab bar] a TableView.
         - Added refresh control to collection view
 - [X] User can search for a movie.
-    -This functionality is included in both the table view and collection view
-- [ ] All images fade in as they are loading.
+    -This functionality is included in both the table view and collection view. The search bar is above the view so it remains visible and accessible when the user scrolls down.
+- [X] All images fade in as they are loading.
 - [X] User can view the large movie poster by tapping on a cell.
 - [ ] For the large poster, load the low resolution image first and then switch to the high resolution image when complete.
-- [ ] Customize the selection effect of the cell.
+- [X] Customize the selection effect of the cell.
+    -Yellow when the user selects, back to clear when the user returns
 - [X] Customize the navigation bar.
-    - "Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image.
+    - The navigation bar has the title "Movies" in dark green with a shadow.
 - [ ] Customize the UI.
 
 The following **additional** features are implemented:
 
-- [ ] List anything else that you can get done to improve the app functionality!
-    
+- [X] List anything else that you can get done to improve the app functionality!
+    -Customize the tab bar
+        -"Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The bar is a pale yellow color.
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
-1.
-2.
+1. Making the text not go off the screen (e.g. not hidden by tab bar)
+2. Lots of code seems reused between the view controllers. I'd like to discuss ways to make that cleaner and more efficient.
 
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://g.recordit.co/Shbmlb6l2y.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
-GIF created with [LiceCap](http://www.cockos.com/licecap/).
+GIF created with [Recordit](http://recordit.co/).
 
 ## Notes
 
