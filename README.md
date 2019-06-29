@@ -34,8 +34,8 @@ The following **optional** features are implemented:
 The following **additional** features are implemented:
 
 - [X] List anything else that you can get done to improve the app functionality!
-    -\n Customize the tab bar
-    -\n "Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The bar is a pale yellow color.
+    -Customize the tab bar
+    -"Now Playing" has the now playing image, the "View Grid" option is now named "View Grid" and has a projector image. The bar is a pale yellow color.
 
 Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
 
