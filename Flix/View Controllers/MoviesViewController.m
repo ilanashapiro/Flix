@@ -25,7 +25,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.dataSource = self; //set data source equal to the view controller (self). once you're scrolling and want to show cells, use self for the data source methods
     self.tableView.delegate = self; //set delegate equal to the view controller (self)
     self.searchBar.delegate = self;
