@@ -18,19 +18,30 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" fixedFrame="YES" image="launch_image" translatesAutoresizingMaskIntoConstraints="NO" id="eks-R6-soS">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="launch_image" translatesAutoresizingMaskIntoConstraints="NO" id="eks-R6-soS">
                                 <rect key="frame" x="118" y="230" width="138" height="139"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="139" id="Wtn-7j-mpz"/>
+                                    <constraint firstAttribute="width" constant="138" id="dkl-Pn-krT"/>
+                                </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Flix" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uTz-GV-vmD">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Flix" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uTz-GV-vmD">
                                 <rect key="frame" x="154" y="377" width="64" height="60"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" weight="thin" pointSize="50"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="uTz-GV-vmD" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leadingMargin" constant="138" id="69p-ds-iq4"/>
+                            <constraint firstItem="eks-R6-soS" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" constant="118" id="DdH-wV-eck"/>
+                            <constraint firstAttribute="bottomMargin" secondItem="uTz-GV-vmD" secondAttribute="bottom" constant="230" id="Grc-nM-QjZ"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="uTz-GV-vmD" secondAttribute="trailing" constant="141" id="Rib-ea-bc8"/>
+                            <constraint firstItem="uTz-GV-vmD" firstAttribute="top" secondItem="eks-R6-soS" secondAttribute="bottom" constant="8" id="aPH-mo-ch7"/>
+                            <constraint firstItem="eks-R6-soS" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" constant="230" id="gpd-eI-JPt"/>
+                            <constraint firstAttribute="trailing" secondItem="eks-R6-soS" secondAttribute="trailing" constant="119" id="uqI-wp-OLO"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                 </viewController>
