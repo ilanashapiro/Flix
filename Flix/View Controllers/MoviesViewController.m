@@ -10,11 +10,13 @@
 #import "MovieCell.h"
 #import "UIImageView+AFNetworking.h" //there isn't a built in library to load an image from URL so we use one of the third party libraries from CocoaPod. this is a category and adds helper functions to augment UIImageView's capabilities.
 #import "DetailsViewController.h"
+#import "Movie.h"
+#import "MovieApiManager.h"
 
 @interface MoviesViewController () <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate>
 
 @property (weak, nonatomic) IBOutlet UITableView *tableView; //create an outlet for the table view from the view controller so that we can refer to the table view
-@property (nonatomic, strong) NSArray *movies;
+@property (nonatomic, strong) NSMutableArray *movies;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 
 @property (strong, nonatomic) NSArray *filteredData;
@@ -56,26 +58,19 @@
 }
 
 - (void)fetchMovies {
-    NSURL *url = [NSURL URLWithString:@"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed"];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10.0];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    MovieApiManager *manager = [MovieApiManager new];
+    [manager fetchNowPlaying:^(NSMutableArray *movies, NSError *error) {
         if (error != nil) {
             NSLog(@"Error! ---------- %@", [error localizedDescription]);
             [self displayNetworkError];
         }
         else {
-            NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-            
-            self.movies = dataDictionary[@"results"];
+            self.movies = movies;
             self.filteredData = self.movies;
-            
-            [self.tableView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
+            [self.tableView reloadData];
             [self.refreshControl endRefreshing];
         }
-        
     }];
-    [task resume];
 }
 
 - (void)displayNetworkError {
@@ -113,42 +108,8 @@
     
     MovieCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MovieCell"]; //see if there is a template in the queue for the tableView with the identifier "MovieCell" and if so, create the cell based on this template. if there is no template, create from scratch.
     
-    NSDictionary *movie = self.filteredData[indexPath.row];
-    cell.titleLabel.text = movie[@"title"];
-    cell.synopsisLabel.text = movie[@"overview"];
-    
-    NSString *baseURLString = @"https://image.tmdb.org/t/p/w500";
-    NSString *posterURLString = movie[@"poster_path"];
-    NSString *fullPosterURL = [baseURLString stringByAppendingString:posterURLString];
-    
-    NSURL *posterURL = [NSURL URLWithString:fullPosterURL]; //NSURL is very similar to NSString, except it checks to make sure the given string is a valid URL
-    
-    cell.posterView.image = nil; //clear out the old image so there's no "flicker" before the new one loads because recall we are reusing the cells from the queue
-    
-    NSURLRequest *request = [NSURLRequest requestWithURL:posterURL];
-    __weak MovieCell *weakCell = cell;
-    [cell.posterView setImageWithURLRequest:request placeholderImage:nil
-                                    success:^(NSURLRequest *imageRequest, NSHTTPURLResponse *imageResponse, UIImage *image) {
-                                        
-                                        // imageResponse will be nil if the image is cached
-                                        if (imageResponse) {
-                                            NSLog(@"Image was NOT cached, fade in image");
-                                            weakCell.posterView.alpha = 0.0;
-                                            weakCell.posterView.image = image;
-                                            
-                                            //Animate UIImageView back to alpha 1 over 1sec
-                                            [UIView animateWithDuration:1 animations:^{
-                                                weakCell.posterView.alpha = 1.0;
-                                            }];
-                                        }
-                                        else {
-                                            NSLog(@"Image was cached so just update the image");
-                                            weakCell.posterView.image = image;
-                                        }
-                                    }
-                                    failure:^(NSURLRequest *request, NSHTTPURLResponse * response, NSError *error) {
-                                        [self displayNetworkError];
-                                    }];
+    Movie *movie = self.filteredData[indexPath.row];
+    cell.movie = movie;
     
     return cell;
 }
@@ -163,7 +124,7 @@
     
     UITableViewCell *tappedCell = sender;
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tappedCell];
-    NSDictionary *movie = self.filteredData[indexPath.row];
+    Movie *movie = self.filteredData[indexPath.row];
     UIView *backgroundView = [[UIView alloc] init];
     backgroundView.backgroundColor = UIColor.yellowColor;
     tappedCell.selectedBackgroundView = backgroundView;
@@ -174,8 +135,8 @@
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     if (searchText.length != 0) {
-        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-            return [evaluatedObject[@"title"] containsString:searchText];  //evaluatedObject
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(Movie *evaluatedMovie, NSDictionary *bindings) {
+            return [evaluatedMovie.title containsString:searchText];  
         }];
         
         self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];

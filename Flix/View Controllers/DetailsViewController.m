@@ -22,23 +22,15 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+
+    [self.posterView setImageWithURL:self.movie.posterURL];
     
-    NSString *baseURLString = @"https://image.tmdb.org/t/p/w500";
-    NSString *posterURLString = self.movie[@"poster_path"];
-    NSString *fullPosterURL = [baseURLString stringByAppendingString:posterURLString];
+   
+    [self.backdropView setImageWithURL:self.movie.backdropURL];
     
-    NSURL *posterURL = [NSURL URLWithString:fullPosterURL]; //NSURL is very similar to NSString, except it checks to make sure the given string is a valid URL
+    self.titleLabel.text = self.movie.title;
+    self.synopsisLabel.text = self.movie.overview;
     
-    [self.posterView setImageWithURL:posterURL];
-    
-    NSString *backdropURLString = self.movie[@"backdrop_path"];
-    NSString *fullBackdropURL = [baseURLString stringByAppendingString:backdropURLString];
-    
-    NSURL *backdropURL = [NSURL URLWithString:fullBackdropURL];
-    [self.backdropView setImageWithURL:backdropURL];
-    
-    self.titleLabel.text = self.movie[@"title"];
-    self.synopsisLabel.text = self.movie[@"overview"];
     [self.titleLabel sizeToFit];
     [self.synopsisLabel sizeToFit];
 }

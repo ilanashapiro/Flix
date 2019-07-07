@@ -10,6 +10,7 @@
 #import "MovieCollectionCell.h"
 #import "UIImageView+AFNetworking.h"
 #import "DetailsViewController.h"
+#import "MovieApiManager.h"
 
 @interface MoviesGridViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UISearchBarDelegate>
 
@@ -65,25 +66,19 @@
 }
 
 - (void)fetchMovies {
-    NSURL *url = [NSURL URLWithString:@"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed"];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10.0];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
-    
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    MovieApiManager *manager = [MovieApiManager new];
+    [manager fetchNowPlaying:^(NSMutableArray *movies, NSError *error) {
         if (error != nil) {
-            NSLog(@"%@", [error localizedDescription]);
+            NSLog(@"Error! ---------- %@", [error localizedDescription]);
             [self displayNetworkError];
         }
         else {
-            NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-            self.movies = dataDictionary[@"results"];
+            self.movies = movies;
             self.filteredData = self.movies;
-            [self.collectionView reloadData]; //call data source methods again as underlying data (self.movies) may have changed
+            [self.collectionView reloadData];
             [self.refreshControl endRefreshing];
         }
     }];
-    
-    [task resume];
 }
 
 - (void)displayNetworkError {
@@ -110,41 +105,8 @@
 - (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
     MovieCollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"MovieCollectionCell" forIndexPath:indexPath];
     
-    NSDictionary *movie = self.filteredData[indexPath.item];
-    
-    NSString *baseURLString = @"https://image.tmdb.org/t/p/w500";
-    NSString *posterURLString = movie[@"poster_path"];
-    NSString *fullPosterURL = [baseURLString stringByAppendingString:posterURLString];
-    
-    NSURL *posterURL = [NSURL URLWithString:fullPosterURL]; //NSURL is very similar to NSString, except it checks to make sure the given string is a valid URL
-    
-    cell.posterView.image = nil; //clear out the old image so there's no "flicker" before the new one loads because recall we are reusing the cells from the queue
-    
-    NSURLRequest *request = [NSURLRequest requestWithURL:posterURL];
-    
-    __weak MovieCollectionCell *weakCell = cell;
-    [cell.posterView setImageWithURLRequest:request placeholderImage:nil
-                                    success:^(NSURLRequest *imageRequest, NSHTTPURLResponse *imageResponse, UIImage *image) {
-                                        
-                                        // imageResponse will be nil if the image is cached
-                                        if (imageResponse) {
-                                            NSLog(@"Image was NOT cached, fade in image");
-                                            weakCell.posterView.alpha = 0.0;
-                                            weakCell.posterView.image = image;
-                                            
-                                            //Animate UIImageView back to alpha 1 over 1sec
-                                            [UIView animateWithDuration:1 animations:^{
-                                                weakCell.posterView.alpha = 1.0;
-                                            }];
-                                        }
-                                        else {
-                                            NSLog(@"Image was cached so just update the image");
-                                            weakCell.posterView.image = image;
-                                        }
-                                    }
-                                    failure:^(NSURLRequest *request, NSHTTPURLResponse * response, NSError *error) {
-                                        [self displayNetworkError];
-                                    }];
+    Movie *movie = self.filteredData[indexPath.item];
+    cell.movie = movie;
     
     return cell;
 }
@@ -161,7 +123,7 @@
  // Pass the selected object to the new view controller.
     UICollectionViewCell *tappedCell = sender;
     NSIndexPath *indexPath = [self.collectionView indexPathForCell:tappedCell];
-    NSDictionary *movie = self.filteredData[indexPath.row];
+    Movie *movie = self.filteredData[indexPath.row];
     DetailsViewController *detailsViewController = [segue destinationViewController]; //returns a UIViewController, which DetailsViewController is a subclass of
 
     detailsViewController.movie = movie;
@@ -170,8 +132,8 @@
 
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
     if (searchText.length != 0) {
-        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-            return [evaluatedObject[@"title"] containsString:searchText];  //evaluatedObject
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(Movie *evaluatedMovie, NSDictionary *bindings) {
+            return [evaluatedMovie.title containsString:searchText];
         }];
 
         self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];
@@ -179,7 +141,6 @@
         NSLog(@"Filtered data: %@", self.filteredData);
 
     }
-    
     else {
         self.filteredData = self.movies;
     }
